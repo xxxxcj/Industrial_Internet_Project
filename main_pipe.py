@@ -110,13 +110,13 @@ for row in sheet.iter_rows(min_row=3):
                     for j in last_valva_list:
                         valve_list.remove(j)
 
-            # 连接管子和阀门
-            for i in tank_exporting_list:
-                Tank_list[i].connect(valve_list[0])
-                for j in range(len(valve_list) - 1):
-                    Valve_list[j].connect(Valve_list[j + 1])
-                for k in tank_importing_list:
-                    Valve_list[-1].connect(Tank_list[k])
+            # # 连接管子和阀门
+            # for i in tank_exporting_list:
+            #     Tank_list[i].connect(valve_list[0])
+            #     for j in range(len(valve_list) - 1):
+            #         Valve_list[j].connect(Valve_list[j + 1])
+            #     for k in tank_importing_list:
+            #         Valve_list[-1].connect(Tank_list[k])
 
             print(tmp, valve_list, tank_exporting_list, tank_importing_list)
             last_valva_list = valve_list.copy()
