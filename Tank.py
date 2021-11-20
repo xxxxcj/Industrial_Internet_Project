@@ -1,24 +1,25 @@
-import Pump
-import Valve
 from TankState import TankState
 from Queue import Queue
 from graphviz import Graph
 
 
 class Tank:
-    def __init__(self, name, window_size, graph: Graph):
+    def __init__(self, name, window_size, graph: Graph, set_node=True):
         self.name = name
         self.next = None
         self.state = TankState.standing
         self.window = Queue(window_size)
         self.max_size = window_size * 2
-        graph.node(self.name, shape='rect')
+        if set_node:
+            graph.node(self.name, shapefile='Tank.png', label=self.name, labelloc='t', penwidth='0')
+            graph.node(self.name + '_out', shape='point', label='')
+            graph.edge(self.name, self.name + '_out', minlen='1')
         self.graph = graph
         self.count = 0
         self.list = [0] * (window_size * 2)
 
     def __repr__(self):
-        return self.name + ": " + str(self.state)
+        return self.name # + ": " + str(self.state)
 
     def __eq__(self, other):
         return self.name == other.name
@@ -32,7 +33,7 @@ class Tank:
     def connect(self, next):
         if self.next is None:
             self.next = next
-            self.graph.edge(self.name, next.name)
+            self.graph.edge(self.name + '_out', next.name + '_in')
         elif self.next == next:
             pass
         else:

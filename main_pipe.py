@@ -1,11 +1,10 @@
-import Tank
-import Valve
-import Pump
+from Tank import Tank
+from Valve import Valve
+from Pump import Pump
 from PumpState import PumpState
 from ValveState import ValveState
 from TankState import TankState
 import openpyxl
-import queue
 from graphviz import Graph
 from graphviz import Digraph
 
@@ -52,7 +51,7 @@ def arrange_order(valve_pump_list: list, Pump_list):
     for item in valve_pump_list:
         if item in Pump_list:
             valve_pump_list.remove(item)
-            valve_pump_list.insert(0, item)
+            valve_pump_list.append(item)
 
 
 def find_path(path_set, s, t):
@@ -66,25 +65,15 @@ data_workbook = openpyxl.load_workbook(data_file_path)
 
 sheet = data_workbook[data_workbook.sheetnames[0]]
 
-# for x in sheet.iter_cols(min_col=3, max_col=8):
-#     print(x[1].value[:4])
-# print()
-# for x in sheet.iter_cols(min_col=9, max_col=28):
-#     print(x[1].value[:4])
-# print()
-# for x in sheet.iter_cols(min_col=29, max_col=30):
-#     print(x[1].value[:6])
-# print()
-
 window_size = 4  # 滑动窗口大小
 
 g = Graph("Structure Graph")
 
-Tank_list = [Tank.Tank(x[1].value[:4], window_size, g) for x in sheet.iter_cols(min_col=3, max_col=8)]
-Valve_list = [Valve.Valve(x[1].value[:4], window_size, g) for x in sheet.iter_cols(min_col=9, max_col=28)]
-Pump_list = [Pump.Pump(x[1].value[:6], window_size, g) for x in sheet.iter_cols(min_col=29, max_col=30)]
+Tank_list = [Tank(x[1].value[:4], window_size, g) for x in sheet.iter_cols(min_col=3, max_col=8)]
+Valve_list = [Valve(x[1].value[:4], window_size, g) for x in sheet.iter_cols(min_col=9, max_col=28)]
+Pump_list = [Pump(x[1].value[:6], window_size, g) for x in sheet.iter_cols(min_col=29, max_col=30)]
 
-outside = Tank.Tank("outside", window_size, g)
+outside = Tank("outside", window_size, g, False)
 
 opened_valve_pump = []
 tank_importing_list = []
@@ -209,14 +198,20 @@ for i in tank_out:
 
 for path in path_set:
     if path[0] == outside and path[2] == outside:
-        p = path[1][0]
-        for item in path[1][1:]:
-            p.connect(item)
+        p = None
+        for item in path[1]:
+            if isinstance(item, Pump):
+                p = item
+
+        for item in path[1]:
+            if not isinstance(item, Pump):
+                if item not in p.next:
+                    item.connect(p)
 
 # print(tank_out)
 # print(tank_in)
 
-# g.view()
+g.view()
 
 s = Digraph('State Machine')
 

@@ -1,15 +1,20 @@
 from Queue import Queue
 from PumpState import PumpState
 from graphviz import Graph
+import Tank
 
 
 class Pump:
     def __init__(self, name, window_size, graph: Graph):
         self.name = name
-        self.next = None
+        self.next = []
         self.state = PumpState.standing
         self.window = Queue(window_size)
-        graph.node(self.name)
+        graph.node(self.name, shape='circle')
+        graph.node(self.name + '_in', shape='point', label='')
+        graph.node(self.name + '_out', shape='point', label='')
+        graph.edge(self.name+'_in', self.name, minlen='1')
+        graph.edge(self.name, self.name + '_out', minlen='1')
         self.graph = graph
 
     def __repr__(self):
@@ -25,13 +30,12 @@ class Pump:
         return ascii_sum
 
     def connect(self, next):
-        if self.next is None:
-            self.next = next
-            self.graph.edge(self.name, next.name)
-        elif self.next == next:
-            pass
-        else:
-            raise Exception(print("reconnection!!!!!!!"))
+        if next not in self.next:
+            self.next.append(next)
+            if isinstance(next, Tank.Tank):
+                self.graph.edge(self.name + '_out', next.name, minlen='2')
+            else:
+                self.graph.edge(self.name + '_out', next.name + '_in', minlen='2')
 
     def renew_state(self, state: int):
         self.window.put(state)
