@@ -8,8 +8,7 @@ class Queue:
     def put(self, n):
         self.li[self.pos] = n
         self.pos = (self.pos + 1) % self.max_size
-        if self.count < self.max_size:
-            self.count += 1
+        self.count += 1
 
     def is_increasing(self):
         for i in range(1, self.max_size):
@@ -24,10 +23,15 @@ class Queue:
         return True
 
     def full(self):
-        return self.count == self.max_size
+        return self.count >= self.max_size
 
     def is_same(self):
         for i in range(self.max_size-1):
             if self.li[i] != self.li[i+1]:
                 return False, -1
         return True, self.li[0]
+
+    # def top(self):
+    #     top_pos = (self.pos - min(self.max_size-1, self.count)) % self.max_size
+    #     print(self.pos, (self.pos - min(self.max_size-1, self.count)) % self.max_size, self.li)
+    #     return self.li[top_pos]

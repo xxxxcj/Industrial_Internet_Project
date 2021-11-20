@@ -11,8 +11,11 @@ class Tank:
         self.next = None
         self.state = TankState.standing
         self.window = Queue(window_size)
+        self.max_size = window_size * 2
         graph.node(self.name, shape='rect')
         self.graph = graph
+        self.count = 0
+        self.list = [0] * (window_size * 2)
 
     def __repr__(self):
         return self.name + ": " + str(self.state)
@@ -36,6 +39,8 @@ class Tank:
             raise Exception(print("reconnection!!!!!!!"))
 
     def renew_amount(self, amount):
+        self.list[self.count % self.max_size] = amount
+        self.count = self.count + 1
         self.window.put(amount)
         if not self.window.full():
             self.state = TankState.standing
@@ -52,3 +57,13 @@ class Tank:
 
     def get_state(self):
         return self.state
+
+    def get_volume(self):
+        upper = self.list[(self.count - (int(self.max_size*0.5)+1)) % self.max_size]
+        lower = self.list[(self.count - (int(self.max_size*0.5)+3)) % self.max_size]
+        right = self.list[(self.count - 6) % self.max_size]
+        error = min(abs(right - upper), abs(right - lower))
+        return str(right) + u"\u00B1" + str(error)
+
+    def get_name(self):
+        return self.name

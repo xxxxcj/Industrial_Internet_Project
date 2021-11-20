@@ -7,6 +7,7 @@ from TankState import TankState
 import openpyxl
 import queue
 from graphviz import Graph
+from graphviz import Digraph
 
 
 def is_stable(item_list: list, type):
@@ -150,7 +151,9 @@ for row in sheet.iter_rows(min_row=3):
                     new_tank_importing_list.append(outside)
 
                 add_path(path_set,
-                         [new_tank_exporting_list[-1], new_opened_valve_pump.copy(), new_tank_importing_list[-1]])
+                         [new_tank_exporting_list[-1], new_opened_valve_pump.copy(), new_tank_importing_list[-1],
+                          new_tank_exporting_list[-1].get_volume(), new_tank_importing_list[-1].get_volume()])
+                # print([new_tank_exporting_list[-1], new_tank_exporting_list[-1].get_volume(), new_tank_importing_list[-1]])
 
                 valve_state.append(opened_valve_pump.copy())
                 tank_state.append([tank_exporting_list.copy(), tank_importing_list.copy()])
@@ -166,7 +169,9 @@ for row in sheet.iter_rows(min_row=3):
 
                 valve_state.append(opened_valve_pump.copy())
                 tank_state.append([tank_exporting_list.copy(), tank_importing_list.copy()])
-                add_path(path_set, [new_tank_exporting_list[-1], opened_valve_pump.copy(), new_tank_importing_list[-1]])
+                add_path(path_set, [new_tank_exporting_list[-1], opened_valve_pump.copy(), new_tank_importing_list[-1],
+                                    new_tank_exporting_list[-1].get_volume(), new_tank_importing_list[-1].get_volume()])
+                # print([new_tank_exporting_list[-1], new_tank_exporting_list[-1].get_volume(), new_tank_importing_list[-1]])
 
 # 找出的总阀门
 tank_out = dict()
@@ -208,7 +213,32 @@ for path in path_set:
         for item in path[1][1:]:
             p.connect(item)
 
-print(tank_out)
-print(tank_in)
+# print(tank_out)
+# print(tank_in)
 
-g.view()
+# g.view()
+
+s = Digraph('State Machine')
+
+last_state_name = 'export = outside\nimport = outside'
+s.node(name=last_state_name, shape='box')
+
+for path in path_set:
+    state_name = 'export = {}\nimport = {}'.format(path[0].get_name(), path[2].get_name())
+    if path[0].get_name() == "outside":
+        condition1 = ''
+    else:
+        condition1 = "volume of " + path[0].get_name() + "=" + str(path[-2])
+    if path[2].get_name() == "outside":
+        condition2 = ''
+    else:
+        condition2 = "volume of " + path[2].get_name() + "=" + str(path[-1])
+    s.node(name=state_name, shape='box')
+    s.edge(tail_name=last_state_name, head_name=state_name, label=condition1+'\n'+condition2, arrowhead='vee')
+    last_state_name = state_name
+s.node(name='Start', color='red')
+s.edge('Start', 'export = outside\nimport = outside', label='TA01 = 1000\nTA02 = 1000', arrowhead='vee')
+s.view()
+
+for path in path_set:
+    print(path)
